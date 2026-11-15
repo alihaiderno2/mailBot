@@ -15,6 +15,7 @@ TEMPLATES = [
 ]
 
 def is_valid_name(name):
+    """Filters out empty, blank, or placeholder names."""
     if not name:
         return False
     invalid_markers = ['null', 'none', 'nan', 'na', 'n/a', 'missing', 'undefined']
@@ -26,15 +27,32 @@ def is_valid_name(name):
 def run_batch_mailer(batch_limit=25):
     sender_email = os.environ.get("BOT_EMAIL")
     app_password = os.environ.get("BOT_PASSWORD")
-    csv_filename = "contacts.csv"
+    # Updated to your exact file name
+    csv_filename = "Pakistan Restaurants Leads - Verified Emails.csv"
     
     rows = []
-    with open(csv_filename, mode='r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        fieldnames = reader.fieldnames
-        for row in reader:
-            rows.append(row)
+    try:
+        with open(csv_filename, mode='r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            # Safely capture existing columns
+            fieldnames = list(reader.fieldnames) if reader.fieldnames else []
             
+            # Automatically inject missing tracking columns if they don't exist
+            if 'Status' not in fieldnames:
+                fieldnames.append('Status')
+            if 'DateSent' not in fieldnames:
+                fieldnames.append('DateSent')
+                
+            for row in reader:
+                # Ensure every row has the tracking columns, even if empty
+                row.setdefault('Status', '')
+                row.setdefault('DateSent', '')
+                rows.append(row)
+    except FileNotFoundError:
+        print(f"Error: Could not find {csv_filename}. Make sure it is uploaded to the repository.")
+        return
+            
+    # Filter for unsent emails
     pending_rows = [row for row in rows if row.get('Status') != 'Sent']
     batch = pending_rows[:batch_limit]
     
@@ -46,10 +64,14 @@ def run_batch_mailer(batch_limit=25):
     processed_count = 0
     
     for row in batch:
-        recipient = row['Email']
-        raw_name = row.get('Restaurant', '')
+        recipient = row.get('Email', '').strip()
+        # Extracts from the 'Name' column found in your new CSV
+        raw_name = row.get('Name', '')
         
-        # Apply the fallback if the name is missing or invalid
+        if not recipient:
+            continue # Skip if the email field itself is totally blank
+        
+        # Apply the fallback if the restaurant name is missing or invalid
         rest_name = raw_name.strip() if is_valid_name(raw_name) else "your restaurant"
         body = random.choice(TEMPLATES).format(restaurant=rest_name)
         
@@ -60,34 +82,35 @@ def run_batch_mailer(batch_limit=25):
         msg.attach(MIMEText(body, 'plain'))
         
         try:
-            # 1. Connect fresh for EVERY email to avoid idle timeouts
+            # 1. Open micro-connection
             server = smtplib.SMTP("smtp.zoho.com", 587)
             server.starttls()
             server.login(sender_email, app_password)
             
+            # 2. Send and immediately disconnect
             server.send_message(msg)
-            server.quit() # Close connection immediately
+            server.quit() 
             
             print(f"Sent to: {recipient} (Used name: {rest_name})")
             
-            # 2. Update memory and save to CSV instantly
+            # 3. Save progress to memory instantly
             row['Status'] = 'Sent'
             row['DateSent'] = datetime.now().strftime("%Y-%m-%d %H:%M")
             processed_count += 1
             
+            # 4. Write back to the CSV instantly
             with open(csv_filename, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(rows)
             
-            # 3. Wait exactly 2 minutes (except after the final email)
+            # 5. Rate limit: 2 minutes (120 seconds)
             if processed_count < len(batch):
                 print("Waiting 2 minutes before the next email...")
                 time.sleep(120)
                 
         except Exception as e:
             print(f"Failed to send to {recipient}. Error: {e}")
-            # If an email fails, ensure we still wait before trying the next one
             if processed_count < len(batch):
                 time.sleep(120)
 
