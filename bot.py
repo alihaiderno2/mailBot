@@ -9,13 +9,13 @@ from email.mime.multipart import MIMEMultipart
 
 # Updated concise templates with links
 TEMPLATES = [
-    "Hi,\n\nI was looking at {restaurant} and wanted to show how our interactive 3D menus can elevate your dining experience.\nCheck out a quick demo: https://www.instagram.com/reels/Dd6kcBeujb8/\nLearn more at www.plated3d.tech.\n\nBest,\nAli",
+    "Hi,\n\nI was looking at {restaurant} and wanted to show how our interactive 3D menus can elevate your dining experience.\nCheck out a quick demo: https://www.instagram.com/reels/Dd6kcBeujb8/\nLearn more at www.plated3d.tech.\n\nBest,\nCasey",
     
-    "Hello,\n\nWe help restaurants like {restaurant} stand out and increase order sizes with QR-code 3D menus.\nSee it in action here: https://www.instagram.com/reels/Dd6kcBeujb8/\nVisit www.plated3d.tech to upgrade your menu.\n\nCheers,\nAli",
+    "Hello,\n\nWe help restaurants like {restaurant} stand out and increase order sizes with QR-code 3D menus.\nSee it in action here: https://www.instagram.com/reels/Dd6kcBeujb8/\nVisit www.plated3d.tech to upgrade your menu.\n\nCheers,\nCasey",
     
-    "Greetings,\n\nWould {restaurant} be open to upgrading to a 3D interactive menu? It takes customers seconds to scan and view.\nWatch how it works: https://www.instagram.com/reels/Dd6kcBeujb8/\nDiscover more at www.plated3d.tech.\n\nThanks,\nAli",
+    "Greetings,\n\nWould {restaurant} be open to upgrading to a 3D interactive menu? It takes customers seconds to scan and view.\nWatch how it works: https://www.instagram.com/reels/Dd6kcBeujb8/\nDiscover more at www.plated3d.tech.\n\nThanks,\nCasey",
     
-    "Hi there,\n\nI noticed {restaurant} and thought our 3D AR menus would perfectly showcase your amazing dishes.\nDemo the technology: https://www.instagram.com/reels/Dd6kcBeujb8/\nDetails at www.plated3d.tech.\n\nBest,\nAli"
+    "Hi there,\n\nI noticed {restaurant} and thought our 3D AR menus would perfectly showcase your amazing dishes.\nDemo the technology: https://www.instagram.com/reels/Dd6kcBeujb8/\nDetails at www.plated3d.tech.\n\nBest,\nCasey"
 ]
 
 def is_valid_name(name):
@@ -74,7 +74,7 @@ def run_batch_mailer(batch_limit=25):
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient
-        msg['Subject'] = "A quick question about your menu"
+        msg['Subject'] = "3D Menu Trial - Plated3D"
         msg.attach(MIMEText(body, 'plain'))
         
         try:
