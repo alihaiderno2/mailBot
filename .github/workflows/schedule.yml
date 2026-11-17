@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # Crucial: Allows the bot to save the CSV back to your repo
+  contents: write # Crucial: Allows the bot to push the updated CSV back to your repo
 
 jobs:
   run-bot:
@@ -30,7 +30,6 @@ jobs:
         run: |
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'action@github.com'
-          git add contacts.csv
-          # The '|| exit 0' prevents the action from failing if no emails were sent (no changes)
+          git add "Pakistan Restaurants Leads - Verified Emails.csv"
           git commit -m "Automated update: Marked batch as sent in CSV" || exit 0
           git push
